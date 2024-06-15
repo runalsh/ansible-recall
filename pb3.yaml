@@ -1,0 +1,49 @@
+- name: show facts
+  hosts: node3
+  tasks:
+    - name: print facts
+      debug:
+        msg: "{{ ansible_facts.board_name }}"
+
+- name: restart nginx only if nginx is running
+  hosts: node4
+  tasks:
+    - name: nginx status
+      command: /usr/bin/systemctl is-active nginx
+      ignore_errors: yes
+      register: result
+    - name: print all results
+      debug:
+        var: result
+    - name: restart sshd based on nginx status
+      service:
+        name: nginx
+        state: restarted
+      when: result.rc == 0
+
+- name: xcheck distros
+  hosts: node3
+  vars:
+    supported:
+      - Debian
+      - Ubuntu
+      - VirtualBox
+  tasks:
+    - name: install package
+      package:
+        name: nano
+        state: present
+      when: 
+        ( ansible_facts.board_name in supported
+        ansible_facts.memfree_mb >= 500 )
+        or
+        ( ansible_facts.ansible_distribution in supported and
+        ansible_facts.memfree_mb > 1024 )
+
+
+
+
+
+
+
+

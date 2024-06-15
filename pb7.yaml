@@ -1,0 +1,28 @@
+- name: set up web server
+  hosts: node4
+  tasks:
+    - name: install httpd
+      package: 
+        name: nginx
+        state: latest
+    - name: hosts.j2
+      copy:
+        src: hosts.j2
+        dest: /var/www/html/index.html
+      notify:
+        - restart_web
+    - name: copy nothing - intended to fail
+      copy: 
+        src: hosts.j2
+        dest: /var/www/html/nothing.html
+    - name:  fail
+      copy:
+        src: hhhhhhhhhhhh
+        dest: /var/www/html/index.html
+      notify:
+        - restart_web    
+  handlers:
+    - name: restart_web
+      service:
+        name: nginx
+        state: restarted

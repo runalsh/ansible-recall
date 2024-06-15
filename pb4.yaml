@@ -1,0 +1,25 @@
+
+- name: configure using a template
+  hosts: node4
+  vars:
+    anonymous_enable: yes
+    local_enable: yes
+    write_enable: yes
+    anon_upload_enable: yes
+  tasks:
+  - name: install vsftpd
+    package:
+      name: vsftpd
+      state: present
+  - name: copy config
+    template:
+      src: vsftpd.j2
+      dest: /etc/vsftpd/vsftpd.conf
+
+- name: create /tmp/hosts
+  hosts: all
+  tasks:
+    - name: update /tmp/hosts
+      template:
+        src: hosts.j2
+        dest: /tmp/hosts

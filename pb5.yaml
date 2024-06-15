@@ -1,0 +1,34 @@
+- name: create a user secret from file
+  hosts: all
+  vars_files:
+    - secret.yml
+  tasks:
+    - name: creating user
+      user:
+        name: "{{ username }}"
+        password: "{{ pwhash }}"
+
+- name: create a user secret from pb
+  hosts: all
+  vars:
+    thesecret: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          65646235633037356463353336326234353062626230356130613234373963353836303832343337
+          6662643838376166616332323964653631653334303934350a313564326336333430623530326662
+          35303439626366333439373036636133356665333763396263396162323961306636383635346436
+          3161323864623835350a666662626239366534666266333562326336633364376634363639663632
+          3331
+  vars_files:
+    - secret.yml        
+  tasks:
+    - name: creating user
+      user:
+        name: "{{ username }}"
+        password: "{{ thesecret }}"
+
+
+# ansible-vault decrypt secret.yml --vault-password-file vault-pass
+# ap pb5.yaml --vault-password-file vault-pass
+
+
+#ansible-vault encrypt_string --vault-password-file vault-pass 'foobar' --name 'thesecret'

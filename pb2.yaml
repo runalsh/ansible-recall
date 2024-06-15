@@ -1,0 +1,105 @@
+- name: servicesa
+  hosts: node2
+  vars:
+    services:
+      - sshd
+      - nginx
+  tasks:
+    - name: start service  {{item}}
+      service:
+        name: "{{item}}"
+        state: started
+      loop: "{{services}}"
+
+- name: show arrays
+  hosts: node2
+  vars_files:
+    - ./loopuservars.yml
+  tasks:
+    - name: print array values
+      debug:
+        msg: User {{ item.key }} has homedirectory {{ item.value.homedir }} and shell {{ item.value.shell }}
+      with_dict: "{{ users }}"
+
+- name: with nested
+  hosts: node1
+  vars:
+    listvar1:
+    - 'a'
+    - 'b'
+    - 'c'
+    listvar2: [1, 2, 3]
+  tasks:
+  - debug:
+      msg: "{{ item.0 }}{{ item.1 }}"
+    with_nested:
+    - "{{ listvar1 }}"
+    - "{{ listvar2 }}"
+
+- name: nested loop
+  hosts: node1
+  vars:
+    listvar1: ['a', 'b', 'c']
+    listvar2: [1, 2, 3]
+  tasks:
+  - debug:
+      msg: "{{ item.0 }}{{ item.1 }}"
+    loop: "{{ listvar1|product(listvar2)|list }}"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,111 @@
+---
+- name: my playbook
+  hosts: all
+  user: vagrant
+  vars_files:
+    - ./vars.yml
+  tasks:
+  - name: remove {{package}}
+    package: name={{package}} state=absent
+
+  - name: install {{package}}
+    package: name={{package}} state=latest
+  
+  - name: install nginx
+    package: name=nginx state=latest
+
+  - name: create file
+    copy:
+      dest: /var/www/html/index.html
+      content: 'web server'
+
+  - name: print facts # a node1 -m setup -a 'filter=ansible_facts'
+    debug:
+      var: ansible_facts
+
+- name: my second playbook
+  hosts: all
+  tasks:
+  - name: show IP address
+    debug:
+      msg: >
+        This host uses IP address {{ ansible_facts.default_ipv4.address }} 
+
+- name: install custom facts
+  hosts: node1
+  vars:
+    remote_dir: /etc/ansible/facts.d
+    facts_file: localfacts.fact
+  tasks:
+    - name: create fact directory
+      file:
+        state: directory
+        recurse: yes
+        path: "{{ remote_dir }}"
+    - name: install new facts
+      copy:
+        src: "{{ facts_file }}"
+        dest: "{{ remote_dir }}"
+
+- name: show facts
+  hosts: node1
+  tasks:
+    - name: print facts
+      debug:
+        msg: "{{ ansible_facts.ansible_local.localfacts.localfactsssssssssss.package }}"
+
+- name: show facts again
+  hosts: node1
+  tasks:
+    - name: print facts
+      debug:
+        msg: "{{ ansible_facts.ansible_local }}"
+
+- name: install and start from facts
+  hosts: node1
+  tasks:
+    - name: install 
+      package:
+        name: "{{ ansible_facts.ansible_local.localfacts.localfactsssssssssss.package }}"
+    - name: start 
+      service:
+        name: "{{ ansible_facts.ansible_local.localfacts.localfactsssssssssss.service }}"
+        state: started
+
+- name: remove custom facts
+  hosts: node1
+  tasks:
+    - name: remove file
+      file:
+        state: absent
+        path: /etc/ansible/facts.d/localfacts.fact
+
+- name: show facts
+  hosts: node1
+  tasks:
+    - name: print facts
+      debug:
+        msg: "{{ ansible_facts.ansible_local }}"
+
+- name: print vars from file
+  hosts: node1
+  vars_files: 
+    - ./vars.yml
+  tasks:
+    - name: print
+      debug:
+        var: package
+    - name: print vars
+      debug:
+        var: test
+
+
+
+
+
+
+
+
+
+
+

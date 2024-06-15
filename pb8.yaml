@@ -1,0 +1,64 @@
+- name: simple block example
+  hosts: all
+  tasks:
+    - name: setting up nginx
+      block:
+      - name: installing nginx
+        package:
+          name: nginx
+          state: present
+      - name: restart nginx
+        service:
+          name: nginx
+          state: started
+      when: ansible_distribution == "Debian"
+
+- name: using blocks
+  hosts: all
+  tasks:
+    - name: intended to be successful
+      block:
+        - name: remove a file
+          shell:
+            cmd: /usr/bin/rm /var/www/html/index.html
+      rescue:
+        - name: create a file
+          shell:
+            cmd: /usr/bin/touch /tmp/rescuefile
+      always:
+        - name: always write a message to logs
+          shell:
+            cmd: /usr/bin/logger hello
+
+- name: demonstrating failed_when
+  hosts: all
+  tasks: 
+    - name: run a script
+      command: echo hello world
+      ignore_errors: yes
+      register: command_result
+      failed_when: "'world' in command_result.stdout"
+    - name: see if we get here
+      debug:
+        msg: hello
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

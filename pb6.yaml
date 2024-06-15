@@ -1,0 +1,23 @@
+- name: demo how register works
+  hosts: node4
+  tasks:
+  - name: show loop register
+    shell: "echo {{ item }}"
+    loop:
+      - "one"
+      - "two"
+    register: echo
+  - name: show register results
+    debug:
+      var: echo
+
+- name: test register
+  hosts: node4
+  tasks:
+    - shell: cat /etc/passwd
+      register: passwd_contents
+    - debug: 
+        msg: echo "passwd contains user ansible"
+      when: passwd_contents.stdout.find('ansible') != -1
+
+

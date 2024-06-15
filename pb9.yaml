@@ -1,0 +1,58 @@
+---
+- name: demonstrating failed_when
+  hosts: all
+  tasks: 
+    - name: run a script
+      command: echo hello world
+      ignore_errors: yes
+      register: command_result
+      failed_when: "'world' in command_result.stdout"
+    - name: see if we get here
+      debug:
+        msg: hello
+
+- name: show the fail module
+  hosts: all
+  tasks:
+  - name: do something impossible
+    lvol:
+      lv: lvnothing
+      vg: vgnothing
+      size: 1G
+    register: command_result
+    ignore_errors: yes
+  - name: show command_result errors
+    debug:
+      var: command_result
+  - name: print nice error message after failure
+    fail:
+      msg: volume group doesnt exist
+    when: "'not found' in command_result.err"
+
+
+- name: demonstrate changed status
+  hosts: all
+  tasks:
+  - name: check local time
+    command: date
+    register: command_result
+    changed_when: false
+
+  - name: print local time
+    debug:
+      var: command_result.stdout
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

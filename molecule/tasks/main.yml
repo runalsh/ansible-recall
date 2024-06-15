@@ -1,0 +1,53 @@
+---
+- name: install some packages
+  yum:
+    name: "{{ item.name }}-{{item.version}}.{{ item.arch }}"
+    state: installed
+  with_items:
+    - { name: 'epel-release', version: '9-7.el9', arch: 'noarch' }
+    - { name: 'htop', version: '3.3.0-1.el9', arch: 'x86_64' }
+    - { name: 'httpd', version: '2.4.57-8.el9', arch: 'x86_64' }
+
+- name: add webapp user
+  ansible.builtin.user:
+    name: webapp
+    system: true
+
+- name: start httpd
+  ansible.builtin.service:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: create index file
+  copy:
+      dest: /var/www/html/index.html
+      content: 'welcome to my web server'  
+
+- name: create an app directory owned by webapp
+  ansible.builtin.file:
+    path: /opt/webapp
+    state: directory
+    owner: webapp
+    group: webapp
+
+- name: create app.conf owned by webapp
+  ansible.builtin.file:
+    path: /opt/webapp/app.conf
+    state: touch
+    owner: webapp
+    group: webapp
+    mode: '0755'
+    access_time: preserve
+    modification_time: preserve
+
+# - name: Copy yum repo file
+#   ansible.builtin.copy:
+#     src: "files/{{ item }}"
+#     dest: "/var/www/html/{{ item }}"
+#     force: yes
+#     mode: 0760
+#   with_items:
+#     - about.html
+#     - index.html
+#   changed_when: false
