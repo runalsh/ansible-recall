@@ -1,0 +1,58 @@
+stages:
+  - molecule
+  - dev
+  - stage
+  - prod
+
+variables:
+  ANSIBLE_HOST_KEY_CHECKING: "False"
+  PROJECTNAME: "project"
+  CIVARS: "CICD=${CI_PROJECT_DIR}/deploy_user=${GITLAB_USER_LOGIN} PATH=${CI_PROJECT_PATH}"
+
+.basic_job_template: &basic_job
+  when: manual
+  before_script:
+    - git checkout -B "${CI_COMMIT_REF_NAME}" "${CI_COMMIT_SHA}"
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.runalsh.ru/runalsh/secrets/${PROJECTNAME}/${DEPLOY_STAGE}.git "./inventories/${DEPLOY_STAGE}/.secrets"
+    - chmod 600 "./.cicd/inventories/${DEPLOY_STAGE}/.secrets/keys/ansible.key"
+  tags:
+    - shell
+
+.deploy_job_template: &deploy_job
+  script:
+    - ansible-galaxy install -f -r ./molecule/requirements.yml
+    - ansible-playbook ./molecule/default/tasks/main.yml -u ansible -i "./inventories/${DEPLOY_STAGE}/hosts" --private-key="./inventories/${DEPLOY_STAGE}/.secrets/keys/ansible.key" -e "$CIVARS"
+
+Molecule Test:
+  stage: molecule
+  variables:
+    DEPLOY_STAGE: "molecule"
+  before_script:
+    - apt update
+    - apt install python3 python3-pip ansible ansible-lint -y
+    - pip install setuptools pip molecule pytest-testinfra molecule-plugins[docker] molecule-plugins[vagrant] molecule-lint flake8
+  script:
+    - cd ./molekule
+    - curl -fsSL https://get.docker.com -o get-docker.sh && DEBIAN_FRONTEND=noninteractive sh get-docker.sh
+    - molekule test
+
+Deploy to Dev:
+  stage: dev
+  variables:
+    DEPLOY_STAGE: "dev"
+  <<: *basic_job
+  <<: *deploy_job
+
+Deploy to Stage:
+  stage: stage
+  variables:
+    DEPLOY_STAGE: "stage"
+  <<: *basic_job
+  <<: *deploy_job
+
+Deploy to Prod:
+  stage: prod
+  variables:
+    DEPLOY_STAGE: "prod"
+  <<: *basic_job
+  <<: *deploy_job
