@@ -13,15 +13,15 @@ variables:
   when: manual
   before_script:
     - git checkout -B "${CI_COMMIT_REF_NAME}" "${CI_COMMIT_SHA}"
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.runalsh.ru/runalsh/secrets/${PROJECTNAME}/${DEPLOY_STAGE}.git "./inventories/${DEPLOY_STAGE}/.secrets"
-    - chmod 600 "./.cicd/inventories/${DEPLOY_STAGE}/.secrets/keys/ansible.key"
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.runalsh.ru/runalsh/secrets/${PROJECTNAME}/${DEPLOY_STAGE}.git "./molecule/inventories/${DEPLOY_STAGE}/.secrets"
+    - chmod 600 "./molecule/inventories/${DEPLOY_STAGE}/.secrets/keys/ansible.key"
   tags:
     - shell
 
 .deploy_job_template: &deploy_job
   script:
     - ansible-galaxy install -f -r ./molecule/requirements.yml
-    - ansible-playbook ./molecule/default/tasks/main.yml -u ansible -i "./inventories/${DEPLOY_STAGE}/hosts" --private-key="./inventories/${DEPLOY_STAGE}/.secrets/keys/ansible.key" -e "$CIVARS"
+    - ansible-playbook ./molecule/default/tasks/main.yml -u ansible -i "./molecule/inventories/${DEPLOY_STAGE}/hosts" --private-key="./molecule/inventories/${DEPLOY_STAGE}/.secrets/keys/ansible.key" -e "$CIVARS"
 
 Molecule Test:
   stage: molecule
