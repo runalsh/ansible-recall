@@ -37,3 +37,16 @@
         delay: 5
         timeout: 30
       delegate_to: 127.0.0.1  
+
+    - name: update db
+      shell: echo updating databases... (migrate)
+      run_once: true
+      # this will run only once on the fisrt host (control node)
+
+
+
+
+
+
+
+
