@@ -1,0 +1,39 @@
+- name : pb 10 test delegate and start
+  hosts: all
+  become: yes
+
+  vars:
+    mytext: 'omg'
+
+  tasks:
+    - name: ping
+      ping:
+
+    - name: create file
+      copy:
+        dest: /tmp/file1.txt
+        content: |
+          file content:
+          {{mytext}} and get from {{inventory_hostname}}
+          ^^ this is mytext from var
+      delegate _to:
+        - node2
+        - node3    
+
+    - name: facts from nodes
+      shell: echo "get info for {{inventory_hostname}} , node is {{ansible_nodename}}" >> ./hosts.txt
+      delegate_to: 127.0.0.1
+
+    - name: restart server
+      shell: sleep 1 && reboot now
+      delegate_to: node2
+      async: 1
+      pool: 0
+
+    - name: w8 to come up
+      wait_for:
+        host: {{inventory_hostname}}
+        state: started
+        delay: 5
+        timeout: 30
+      delegate_to: 127.0.0.1  
